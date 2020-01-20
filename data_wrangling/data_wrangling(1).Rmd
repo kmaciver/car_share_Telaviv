@@ -5,7 +5,7 @@ date: "January 14, 2020"
 output: html_document
 ---
 ```{r}
-full_data <- read.csv("C:/Users/Dell/Desktop/Ryerson/Building Cases/4. Product Analytics/Dataset/full_data.csv")
+full_data <- read.csv("full_data.csv")
 ```
 
 ```{r}
@@ -50,6 +50,6 @@ time_series_data$usage <- 300 - rowSums(time_series_data[,c(3:73)])
 ```
 
 ```{r}
-write.csv(time_series_data, "C:/Users/Dell/Desktop/Ryerson/Building Cases/4. Product Analytics/Dataset/car_share_series2.csv" )
+write.csv(time_series_data, "car_share_series2.csv" )
 ```
 
