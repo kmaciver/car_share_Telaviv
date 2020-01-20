@@ -1,0 +1,55 @@
+---
+title: "Forecasting"
+author: "Kevin Maciver"
+date: "January 19, 2020"
+output: html_document
+---
+
+
+```{r}
+forecast <- read.csv("forecast_34h.csv")
+labels <- read.csv("labels_34h.csv")
+
+```
+
+```{r}
+neighborhood <- read.csv("tel_aviv_neighborhood.csv")
+```
+
+```{r}
+library(tidyverse)
+library(sf)
+forecast <- forecast[,c(-73)]
+labels <- labels[,c(-73)]
+```
+
+```{r}
+forecast <- forecast %>% group_by(timestamp) %>% gather(key="neigh_id",value="cars", X1:X71)
+```
+
+```{r}
+forecast <- forecast %>% ungroup() %>% mutate(neighborhood_id = unlist(str_extract_all(forecast$neigh_id,"\\d+")))
+forecast$neighborhood_id <- as.integer(forecast$neighborhood_id)
+```
+
+```{r}
+forecast <-inner_join(forecast, neighborhood, by="neighborhood_id") %>% select(timestamp, cars, neighborhood_id, neighborhood_name, area_polygon)
+```
+
+```{r}
+labels <- labels %>% group_by(timestamp) %>% gather(key="neigh_id",value="cars", X1:X71)
+labels <- labels %>% ungroup() %>% mutate(neighborhood_id = unlist(str_extract_all(labels$neigh_id,"\\d+")))
+labels$neighborhood_id <- as.integer(labels$neighborhood_id)
+labels <-inner_join(labels, neighborhood, by="neighborhood_id") %>% select(timestamp, cars, neighborhood_id, neighborhood_name, area_polygon)
+```
+
+```{r}
+forecast_sf <- st_as_sf(forecast, wkt = "area_polygon", crs=4326)
+labels_sf <- st_as_sf(labels, wkt = "area_polygon", crs=4326)
+```
+
+```{r}
+st_write(forecast_sf, "forecast.shp")
+st_write(labels_sf, "labels.shp")
+```
+
