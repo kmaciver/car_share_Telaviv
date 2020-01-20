@@ -1,0 +1,55 @@
+---
+title: "data_wrangling2"
+author: "Kevin Maciver"
+date: "January 14, 2020"
+output: html_document
+---
+```{r}
+full_data <- read.csv("C:/Users/Dell/Desktop/Ryerson/Building Cases/4. Product Analytics/Dataset/full_data.csv")
+```
+
+```{r}
+library(tidyverse)
+library(sf)
+time_series_data <- full_data %>% group_by(timestamp) %>% spread(neighborhood_id, cars)
+time_series_data <- time_series_data %>% ungroup()
+
+time_series_data <- time_series_data%>% group_by(timestamp) %>% select(timestamp,hour,`1`:`71`)
+```
+```{r}
+time_series_data[is.na(time_series_data)] <- 0
+```
+
+```{r}
+time_series_data <- time_series_data %>% group_by(timestamp,hour) %>% summarise_all(sum)
+```
+
+```{r}
+# Date with missing hour recordings
+missing_hours <- c("2018-12-11","2018-12-18","2018-12-20","2019-01-09","2019-01-10")
+time_series_data <- time_series_data %>% filter(!substr(timestamp,0,10) %in% missing_hours)
+```
+
+```{r}
+library(lubridate)
+
+get_weekday <- function(x){
+  return(wday(substr(x,1,10)))
+}
+
+
+time_series_data$weekday <- unlist(lapply(time_series_data$timestamp, get_weekday))
+```
+
+```{r}
+time_series_data <- time_series_data %>% ungroup()
+```
+
+```{r}
+time_series_data$usage <- 300 - rowSums(time_series_data[,c(3:73)])
+```
+
+```{r}
+write.csv(time_series_data, "C:/Users/Dell/Desktop/Ryerson/Building Cases/4. Product Analytics/Dataset/car_share_series2.csv" )
+```
+
